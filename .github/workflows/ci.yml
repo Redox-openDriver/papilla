@@ -1,0 +1,65 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: toolchain
+        run: |
+          rustup toolchain install stable --profile minimal --component rustfmt,clippy
+          rustup default stable
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            target
+          key: ${{ runner.os }}-lint-${{ hashFiles('Cargo.lock') }}
+      - run: cargo fmt --check
+      - run: cargo clippy --locked --all-targets --features bench -- -D warnings
+      - run: cargo clippy --locked --all-targets --no-default-features --features xchacha20-poly1305 -- -D warnings
+      - run: cargo clippy --locked --all-targets --no-default-features --features aes-256-gcm -- -D warnings
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cipher: [aes-256-gcm-siv, xchacha20-poly1305, aes-256-gcm]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: toolchain
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            target
+          key: ${{ runner.os }}-test-${{ matrix.cipher }}-${{ hashFiles('Cargo.lock') }}
+      - run: cargo test --locked --release --no-default-features --features ${{ matrix.cipher }}

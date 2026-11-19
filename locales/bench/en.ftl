@@ -1,0 +1,42 @@
+bench-usage = usage: papilla-bench verify <enrollment frames> <list.tsv> [foreign.tsv] | audit <list.tsv> | pairs <list.tsv> [foreign.tsv] | saturate <list.tsv> <finger> | adapt <list.tsv> <finger> [enrollment]
+bench-templates = { $frames } frames, points per frame: median { $median }, 10% { $p10 }; { $ms } ms/frame on one core
+bench-comparisons = { $pairs } comparisons, { $ms } ms per comparison on one core
+bench-head-finger = finger
+bench-head-genuine = genuine
+bench-head-median = median
+bench-head-own = imp.(own)
+bench-head-foreign = imp.(ext)
+bench-head-miss = missed at 0 impostors
+bench-suspicious = suspicious frames: { $count }
+bench-suspicious-row = { $score } vs own { $own }  { $path }  looks like { $finger } ({ $other })
+bench-too-few = { $finger }: needs at least { $need } frames, has { $have }
+bench-arrival = { $finger }: score of each new touch against the ones collected so far (10 per row):
+bench-head-window = window
+bench-head-need = need
+bench-head-score = score
+bench-head-stop = stops at
+bench-head-miss-one = missed (1 touch)
+bench-fixed = fixed { $count } touches: missed { $miss }%
+bench-adapt-intro = { $finger }: enrollment { $enroll }, stream of own touches { $stream }, impostor frames { $impostors }
+bench-head-rule = rule
+bench-head-miss-first = miss 1st ½
+bench-head-miss-second = miss 2nd ½
+bench-head-added = added
+bench-head-size = size
+bench-head-impostor-max = imp. max
+bench-rule-none = no adaptation
+bench-rule-range = ≥{ $low }{ $high ->
+        [none] , any
+       *[other] {" "}and <{ $high }
+    }
+bench-impostor-tail = impostor frames scoring ≥ { $threshold }: { $count } of { $total }
+bench-bad-image = cannot read { $path }: { $detail }
+bench-wrote = scores written to { $file }
+bench-error = error: { $detail }
+bench-pairs-intro = comparing every pair of frames from different fingers: { $pairs } comparisons
+bench-pairs-count = pairs scoring ≥ { $threshold }: { $count }
+bench-pairs-top = { $score }  { $probe } ↔ { $other }
+bench-pairs-done = done in { $minutes } min; maximum among impostor pairs: { $max }
+bench-image-header = the PGM header is malformed
+bench-image-format = the format must be P5 with depth 255
+bench-image-size = less data than the header promises

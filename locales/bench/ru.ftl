@@ -1,0 +1,42 @@
+bench-usage = использование: papilla-bench verify <кадров регистрации> <list.tsv> [чужие.tsv] | audit <list.tsv> | pairs <list.tsv> [чужие.tsv] | saturate <list.tsv> <палец> | adapt <list.tsv> <палец> [регистрация]
+bench-templates = кадров { $frames }, точек на кадр: медиана { $median }, 10% { $p10 }; { $ms } мс/кадр на одном ядре
+bench-comparisons = сравнений { $pairs }, { $ms } мс на сравнение на одном ядре
+bench-head-finger = палец
+bench-head-genuine = своих
+bench-head-median = медиана
+bench-head-own = чужие(св)
+bench-head-foreign = чужие(вн)
+bench-head-miss = не узнан при 0 чужих
+bench-suspicious = подозрительных кадров: { $count }
+bench-suspicious-row = { $score } vs свой { $own }  { $path }  похож на { $finger } ({ $other })
+bench-too-few = { $finger }: нужно хотя бы { $need } кадров, есть { $have }
+bench-arrival = { $finger }: оценка каждого нового касания против уже собранных (по 10 подряд):
+bench-head-window = окно
+bench-head-need = нужно
+bench-head-score = оценка
+bench-head-stop = стоп на
+bench-head-miss-one = не узнан (1 кас.)
+bench-fixed = фиксированно { $count } касаний: не узнан { $miss }%
+bench-adapt-intro = { $finger }: регистрация { $enroll }, поток своих касаний { $stream }, чужих кадров { $impostors }
+bench-head-rule = правило
+bench-head-miss-first = отказ 1-я ½
+bench-head-miss-second = отказ 2-я ½
+bench-head-added = добавлено
+bench-head-size = размер
+bench-head-impostor-max = чужие макс
+bench-rule-none = без дообучения
+bench-rule-range = ≥{ $low }{ $high ->
+        [none] , любые
+       *[other] {" "}и <{ $high }
+    }
+bench-impostor-tail = чужих кадров с оценкой ≥ { $threshold }: { $count } из { $total }
+bench-bad-image = не удалось прочитать { $path }: { $detail }
+bench-wrote = оценки записаны в { $file }
+bench-error = ошибка: { $detail }
+bench-pairs-intro = сравниваю все пары кадров разных пальцев: { $pairs } сравнений
+bench-pairs-count = пар с оценкой ≥ { $threshold }: { $count }
+bench-pairs-top = { $score }  { $probe } ↔ { $other }
+bench-pairs-done = готово за { $minutes } мин; максимум среди чужих пар: { $max }
+bench-image-header = неверный заголовок PGM
+bench-image-format = нужен формат P5 с глубиной 255
+bench-image-size = данных меньше, чем обещает заголовок
