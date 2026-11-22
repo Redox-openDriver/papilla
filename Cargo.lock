@@ -168,8 +168,8 @@ dependencies = [
 
 [[package]]
 name = "drv-i18n"
-version = "0.1.0"
-source = "git+https://github.com/Redox-openDriver/drv-i18n?tag=v0.1.0#a5bdbea246379d76a41022b6dc2b924375301f82"
+version = "0.1.1"
+source = "git+https://github.com/Redox-openDriver/drv-i18n?tag=v0.1.1#dd61d1c09785c7fb115b070120c54b1775678378"
 dependencies = [
  "fluent-bundle",
  "unic-langid",
@@ -283,7 +283,7 @@ checksum = "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98"
 
 [[package]]
 name = "papilla"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "aes",
  "aes-gcm",
