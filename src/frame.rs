@@ -109,6 +109,9 @@ impl<'a> Frame<'a> {
     }
 
     pub fn covers(&self, x: f32, y: f32) -> bool {
+        if !x.is_finite() || !y.is_finite() {
+            return false;
+        }
         let Some(mask) = self.mask else { return true };
         let (xi, yi) = (x.round(), y.round());
         if xi < 0.0 || yi < 0.0 || xi >= self.width as f32 || yi >= self.height as f32 {
@@ -175,5 +178,6 @@ mod tests {
         let f = Frame::gray8(80, 80, &px).unwrap().masked(&mask).unwrap();
         assert!(f.covers(5.2, 9.8) && !f.covers(6.0, 10.0) && !f.covers(-3.0, 10.0) && !f.covers(5.0, 500.0));
         assert!(Frame::gray8(80, 80, &px).unwrap().covers(79.0, 79.0));
+        assert!(!f.covers(f32::NAN, 10.0) && !f.covers(5.0, f32::INFINITY) && !Frame::gray8(80, 80, &px).unwrap().covers(f32::NAN, 1.0));
     }
 }

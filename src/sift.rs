@@ -53,10 +53,10 @@ impl Plane {
     }
 
     pub fn blurred(&self, sigma: f32) -> Plane {
-        if sigma <= 0.0 {
+        if !sigma.is_finite() || sigma <= 0.0 {
             return self.clone();
         }
-        let radius = (sigma * 4.0).round().max(1.0) as isize;
+        let radius = ((sigma * 4.0).round().max(1.0) as isize).min(self.width.max(self.height).max(1) as isize);
         let mut kernel: Vec<f32> = (-radius..=radius).map(|i| (-((i * i) as f32) / (2.0 * sigma * sigma)).exp()).collect();
         let total: f32 = kernel.iter().sum();
         kernel.iter_mut().for_each(|k| *k /= total);
@@ -501,6 +501,16 @@ mod tests {
 
     const D: Detector = Detector::SMALL_SENSOR;
     const ANYWHERE: fn(f32, f32) -> bool = |_, _| true;
+
+    #[test]
+    fn a_broken_or_huge_blur_neither_panics_nor_runs_away() {
+        let image = blob_image();
+        assert_eq!(image.blurred(f32::INFINITY).data, image.data);
+        assert_eq!(image.blurred(f32::NAN).data, image.data);
+        let flat = image.blurred(1e6);
+        let mean = image.data.iter().sum::<f32>() / image.data.len() as f32;
+        assert!(flat.data.iter().all(|value| (value - mean).abs() < 0.2), "a blur wider than the picture smooths it out");
+    }
 
     #[test]
     fn finds_blobs_near_their_centres() {

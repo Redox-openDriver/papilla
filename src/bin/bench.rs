@@ -48,8 +48,16 @@ fn read_pgm(path: &str) -> Result<(usize, usize, Vec<u8>), Fail> {
     if fields[0] != b"P5" || fields[3] != b"255" {
         return Err(bad("bench-image-format"));
     }
-    let pixels = w.checked_mul(h).and_then(|n| data.get(pos + 1..pos + 1 + n)).ok_or_else(|| bad("bench-image-size"))?;
+    let pixels = w
+        .checked_mul(h)
+        .and_then(|n| pos.checked_add(1).and_then(|start| Some(start..start.checked_add(n)?)))
+        .and_then(|range| data.get(range))
+        .ok_or_else(|| bad("bench-image-size"))?;
     Ok((w, h, pixels.to_vec()))
+}
+
+fn quoted(field: &str) -> String {
+    if field.contains([',', '"', '\n', '\r']) { format!("\"{}\"", field.replace('"', "\"\"")) } else { field.to_string() }
 }
 
 fn parallel_map<T: Sync, R: Send>(items: &[T], f: impl Fn(&T) -> R + Sync) -> Vec<R> {
@@ -142,7 +150,7 @@ impl Bench {
             }
         }
         let galleries: Vec<(String, Vec<usize>)> =
-            by_finger.into_iter().filter(|(_, ids)| ids.len() >= enroll + 20).map(|(f, ids)| (f, ids[..enroll].to_vec())).collect();
+            by_finger.into_iter().filter(|(_, ids)| ids.len() >= enroll.saturating_add(20)).map(|(f, ids)| (f, ids[..enroll].to_vec())).collect();
         let enrolled: HashSet<usize> = galleries.iter().flat_map(|(_, ids)| ids.iter().copied()).collect();
         let probes: Vec<usize> = (0..rows.len()).filter(|i| !enrolled.contains(i)).collect();
         let started = Instant::now();
@@ -158,7 +166,7 @@ impl Bench {
         let mut csv = String::from("probe,finger,gallery,genuine,score\n");
         for (k, &p) in probes.iter().enumerate() {
             for (g, (f, _)) in galleries.iter().enumerate() {
-                csv.push_str(&format!("{},{},{f},{},{}\n", rows[p].path, rows[p].finger, rows[p].finger == *f, scores[k][g]));
+                csv.push_str(&format!("{},{},{},{},{}\n", quoted(&rows[p].path), quoted(&rows[p].finger), quoted(f), rows[p].finger == *f, scores[k][g]));
             }
         }
         std::fs::write(SCORES_FILE, csv)?;
@@ -194,7 +202,15 @@ impl Bench {
             genuine.sort_unstable();
             let top = own.max(foreign_max);
             let miss = genuine.iter().filter(|&&s| s <= top).count() as f32 / genuine.len() as f32;
-            println!("{f:16} {:>6} {:>8} {:>10} {:>10} {:>21.1}%", genuine.len(), genuine[genuine.len() / 2], own, foreign_max, miss * 100.0);
+            println!(
+                "{:16} {:>6} {:>8} {:>10} {:>10} {:>21.1}%",
+                drv_i18n::printable(f),
+                genuine.len(),
+                genuine[genuine.len() / 2],
+                own,
+                foreign_max,
+                miss * 100.0
+            );
         }
         for threshold in TAIL {
             let count = impostors.iter().filter(|&&s| s >= threshold).count();
@@ -334,8 +350,8 @@ impl Bench {
             .map(|r| Row { path: r.path.clone(), finger: r.finger.clone(), source: r.source.clone() })
             .collect();
         let genuine_count = rows.len();
-        if genuine_count < enroll + 20 {
-            return Err(Fail::new("bench-too-few").arg("finger", finger).num("need", enroll + 20).num("have", genuine_count).into());
+        if genuine_count < enroll.saturating_add(20) {
+            return Err(Fail::new("bench-too-few").arg("finger", finger).num("need", enroll.saturating_add(20)).num("have", genuine_count).into());
         }
         rows.extend(all.into_iter().filter(|r| r.finger != finger));
         let templates = self.templates(&rows)?;
